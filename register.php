@@ -1,85 +1,67 @@
-<!doctype html>
-<html lang="en">
-
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Register</title>
-	<link href="css/bootstrap.min.css" rel="stylesheet">
 </head>
 
+<?php include 'navbar.php'; ?>
+
 <body>
-	<script src="js/bootstrap.bundle.min.js"></script>
-
 	<div class="container-sm" style="padding: 30px;">
-		<div style="text-align: center;">
-			<h1>
-				<b>ID Card Booking System</b>
-			</h1>
-			<h2>
-				<u>Register</u>
-			</h2>
-		</div>
-
 		<div class="col-sm-6" style="margin: auto;">
-			<p>
-			<div class="alert alert-danger" role="alert">
-				<?php
+			<div class="card">
+				<div class="card-body">
+					<h3 class="card-title" style="text-align: center;">Register</h3>
 
-				if (isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["confirmPassword"])) {
-					$errorMsg = array();
+					<p class="card-text">
+						<?php
+						if (isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["confirmPassword"])) {
+							$errorMsg = array();
 
-					if (!preg_match("(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})", $_POST["email"]))
-						array_push($errorMsg, "Invalid Email");
+							if (!preg_match("(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})", $_POST["email"]))
+								array_push($errorMsg, "Invalid Email!");
 
-					// asd123ASD!@#
-					if (!preg_match("((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*?([^\w\s]|[_])).{8,})", $_POST["password"]))
-						array_push($errorMsg, "Invalid Password");
+							// asd123ASD!@#
+							if (!preg_match("((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*?([^\w\s]|[_])).{8,})", $_POST["password"]))
+								array_push($errorMsg, "Invalid Password!");
 
-					if ($_POST["password"] != $_POST["confirmPassword"])
-						array_push($errorMsg, "Password Not Match");
+							if ($_POST["password"] != $_POST["confirmPassword"])
+								array_push($errorMsg, "Password Not Match!");
 
-					if (sizeof($errorMsg) > 0)
-						echo join("<br />", $errorMsg);
-					else {
-						header('Location: login.php');
-						exit;
-					}
-				}
+							$dbh = pdo();
+							$sql = 'SELECT * FROM user WHERE email = ?';
+							$sth = $dbh->prepare($sql);
+							$sth->execute([$_POST["email"]]);
+							$users = $sth->fetchAll();
 
-				?>
+							if (sizeof($users) > 0)
+								array_push($errorMsg, 'Email already exists!');
 
-				<?php
+							if (sizeof($errorMsg) > 0) : ?>
+					<div class="alert alert-danger" role="alert">
+						<?php echo join("<br />", $errorMsg); ?>
+					</div>
+				<?php else : ?>
+					<?php
+								try {
+									$dbh = pdo();
+									$sql = 'INSERT INTO user (email, password, role) VALUES (?,?,?)';
+									$sth = $dbh->prepare($sql);
+									$sth->execute([$_POST["email"], hashPassword($_POST["password"]), "public"]);
 
-				// session_start();
+									header('Location: login.php');
+									exit;
+								} catch (PDOException $e) {
+									echo 'Insert failed: ' . $e->getMessage();
+								}
+					?>
+				<?php endif ?>
+			<?php
+						}
+			?>
 
-				// echo $_SESSION["email"];
-				/* Connect to an ODBC database using an alias */
-				// $dsn = 'mysql:dbname=id_card_booking;host=127.0.0.1';
-				// $user = 'root';
-				// $password = 'a@200415';
-
-				// $dbh = new PDO($dsn, $user, $password);
-
-				// /* Execute a prepared statement by passing an array of values */
-				// $sql = 'SELECT * FROM user';
-				// $sth = $dbh->prepare($sql, array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY));
-				// $sth->execute();
-				// $red = $sth->fetchAll();
-				// /* Array keys can be prefixed with colons ":" too (optional) */
-				// // $sth->execute(array(':calories' => 175, ':colour' => 'yellow'));
-				// // $yellow = $sth->fetchAll();
-
-				// // echo hash('sha3-512', 'The quick brown fox jumped over the lazy dog.');
-				// print_r($red);
-				?>
-			</div>
-			</p>
-
-			<form action="register.php" method="POST">
+			<form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="POST">
 				<div class="mb-3">
 					<label for="email" class="form-label">Email address</label>
-					<input type="text" class="form-control" name="email" required>
+					<input type="text" class="form-control" name="email" value="<?php echo isset($_POST["email"]) ?  $_POST["email"] : "" ?>" required>
 				</div>
 				<div class="mb-3">
 					<label for="password" class="form-label">Password</label>
@@ -112,8 +94,13 @@
 				&nbsp;
 				<a href="login.php" class="link-primary">Login</a>
 			</form>
+			</p>
+				</div>
+			</div>
 		</div>
 	</div>
 </body>
 
 </html>
+
+<?php redirectHomeIfLoggedIn(); ?>

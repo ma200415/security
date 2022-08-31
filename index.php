@@ -1,36 +1,23 @@
-<!doctype html>
-<html lang="en">
-
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Home</title>
-	<link href="css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
-	<script src="js/bootstrap.bundle.min.js"></script>
+<?php include 'navbar.php'; ?>
 
+<body>
 	<div class="container-sm" style="padding: 30px;">
 		<div style="text-align: center;">
-			<h1>
-				<b>ID Card Booking System</b>
-			</h1>
-			<h2>
-				<u>Home</u>
-			</h2>
+			<div class="card">
+				<div class="card-body">
+					<h3 class="card-title">Home</h3>
+					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+					<a href="#" class="btn btn-primary">Go somewhere</a>
+				</div>
+			</div>
 		</div>
 
 		<div class="col-sm-6" style="margin: auto;">
-			<?php session_start();
-			if (isset($_SESSION["email"])) :
-			?>
-				<form action="index.php" method="POST">
-					<button type="submit" class="btn btn-secondary" name="logout">Logout</button>
-				</form>
-			<?php else : ?>
-				<a class="btn btn-success" href="login.php" role="button">Login</a>
-			<?php endif	?>
+
 		</div>
 	</div>
 </body>
@@ -38,7 +25,6 @@
 </html>
 
 <?php
-
 if (isset($_POST["logout"])) {
 	$_SESSION = array();
 	session_destroy();
@@ -46,5 +32,4 @@ if (isset($_POST["logout"])) {
 	header('Location: /');
 	exit;
 }
-
 ?>
