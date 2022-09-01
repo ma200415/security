@@ -21,8 +21,13 @@
 					<a class="nav-link active" href="/">Home</a>
 				</li>
 			</ul>
+
 			<div class="d-flex" role="search">
 				<?php if (isset($_SESSION["email"])) : ?>
+					<span class="navbar-text" style="color: white;">
+						<?php echo $_SESSION["email"] ?>
+					</span>
+					&nbsp;
 					<form action="index.php" method="POST">
 						<button type="submit" class="btn btn-outline-light" name="logout">Logout</button>
 					</form>
@@ -45,10 +50,18 @@ function redirectHomeIfLoggedIn()
 	}
 }
 
-function hashPassword($rawPassword)
+function redirectHomeIfNotLoggedIn()
 {
-	return hash('sha3-512', $rawPassword);
+	if (!isset($_SESSION["email"])) {
+		header('Location: login.php');
+		exit;
+	}
 }
+
+// function hashPassword($rawPassword)
+// {
+// 	return hash('sha3-512', $rawPassword);
+// }
 
 function pdo()
 {
@@ -60,5 +73,40 @@ function pdo()
 	$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 	return $dbh;
+}
+
+function regexEnglishName()
+{
+	return "(^[a-zA-Z\s]*)";
+}
+
+function regexIDCardNo()
+{
+	return "(^[A-Z]{1}[0-9]{6}\([0-9]\))";
+}
+
+function regexContact()
+{
+	return "[0-9]{8}";
+}
+
+function regexEmail()
+{
+	return "(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})";
+}
+
+function regexPassword()
+{
+	return "((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*?([^\w\s]|[_])).{8,})";
+}
+
+function minBirthday()
+{
+	return date("Y-m-d", strtotime("-150 Years"));
+}
+
+function maxBirthday()
+{
+	return date("Y-m-d");
 }
 ?>

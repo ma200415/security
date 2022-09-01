@@ -1,8 +1,11 @@
+<?php
+include 'navbar.php';
+redirectHomeIfLoggedIn();
+?>
+
 <head>
 	<title>Login</title>
 </head>
-
-<?php include 'navbar.php'; ?>
 
 <body>
 	<div class="container-sm" style="padding: 30px;">
@@ -15,46 +18,56 @@
 						<?php
 						if (isset($_POST["email"]) && isset($_POST["password"])) {
 							$dbh = pdo();
-							$sql = 'SELECT * FROM user WHERE email = ? AND password = ?';
+							$sql = 'SELECT * FROM user WHERE email = ?';
 							$sth = $dbh->prepare($sql);
-							$sth->execute([$email, hashPassword($password)]);
+							$sth->execute([$_POST["email"]]);
 							$users = $sth->fetchAll();
 
 							if (sizeof($users) > 0) :
 								$foundUser = $users[0];
+								var_dump(password_hash($_POST["password"], PASSWORD_DEFAULT));
+								if (hash_equals($foundUser["password"], password_hash($_POST["password"], PASSWORD_DEFAULT))) :
+									$_SESSION["email"] = $foundUser["email"];
+									$_SESSION["role"] = $foundUser["role"];
 
-								session_start();
-
-								$_SESSION["email"] = $foundUser["email"];
-								$_SESSION["role"] = $foundUser["role"];
-
-								header('Location: /');
-								exit;
+									header('Location: /');
+									exit;
 						?>
-							<?php else : ?>
+								<?php else : ?>
 					<div class="alert alert-danger" role="alert">
-						User Not Found
+						Incorrect password????????????
 					</div>
-				<?php endif ?>
+				<?php
+								endif
+				?>
 			<?php
-						}
+							else :
 			?>
-
-			<form id="form1" action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="POST">
-				<div class="mb-3">
-					<label for="email" class="form-label">Email address</label>
-					<input type="text" class="form-control" name="email" value="<?php echo isset($_POST["email"]) ?  $_POST["email"] : "" ?>" required>
+				<div class="alert alert-danger" role="alert">
+					User Not Found
 				</div>
-				<div class="mb-3">
-					<label for="password" class="form-label">Password</label>
-					<input type="password" class="form-control" name="password" aria-describedby="passwordHelp" required>
-				</div>
-			</form>
-			</p>
+			<?php
+							endif
+			?>
+		<?php
+						}
+		?>
 
-			<button type="submit" form="form1" class="btn btn-primary">Submit</button>
-			&nbsp;
-			<a href="register.php" class="link-primary">Register</a>
+		<form id="form1" action="<?php echo $_SERVER["PHP_SELF"] ?>" method="POST">
+			<div class="mb-3">
+				<label for="email" class="form-label">Email address</label>
+				<input type="text" class="form-control" name="email" value="<?php echo isset($_POST["email"]) ?  $_POST["email"] : "" ?>" required>
+			</div>
+			<div class="mb-3">
+				<label for="password" class="form-label">Password</label>
+				<input type="password" class="form-control" name="password" aria-describedby="passwordHelp" required>
+			</div>
+		</form>
+		</p>
+
+		<button type="submit" form="form1" class="btn btn-primary">Submit</button>
+		&nbsp;
+		<a href="register.php" class="link-primary">Register</a>
 				</div>
 			</div>
 		</div>
@@ -62,5 +75,3 @@
 </body>
 
 </html>
-
-<?php redirectHomeIfLoggedIn(); ?>

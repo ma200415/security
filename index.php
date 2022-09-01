@@ -1,23 +1,29 @@
+<?php include 'navbar.php'; ?>
+
 <head>
 	<title>Home</title>
 </head>
 
-<?php include 'navbar.php'; ?>
-
 <body>
 	<div class="container-sm" style="padding: 30px;">
-		<div style="text-align: center;">
+		<div class="col-sm-6" style="margin: auto;">
 			<div class="card">
 				<div class="card-body">
-					<h3 class="card-title">Home</h3>
+					<h3 class="card-title">
+						<div style="text-align: center;">
+							Home
+						</div>
+					</h3>
 					<p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-					<a href="#" class="btn btn-primary">Go somewhere</a>
+					<?php
+					if (isset($_SESSION["email"])) :
+					?>
+						<a href="bookingform.php" class="btn btn-primary"> Start </a>
+					<?php
+					endif
+					?>
 				</div>
 			</div>
-		</div>
-
-		<div class="col-sm-6" style="margin: auto;">
-
 		</div>
 	</div>
 </body>
