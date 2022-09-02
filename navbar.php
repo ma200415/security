@@ -58,11 +58,6 @@ function redirectHomeIfNotLoggedIn()
 	}
 }
 
-// function hashPassword($rawPassword)
-// {
-// 	return hash('sha3-512', $rawPassword);
-// }
-
 function pdo()
 {
 	$dsn = 'mysql:dbname=id_card_booking;host=127.0.0.1';
@@ -87,7 +82,7 @@ function regexIDCardNo()
 
 function regexContact()
 {
-	return "[0-9]{8}";
+	return "([0-9]{8})";
 }
 
 function regexEmail()
@@ -98,6 +93,11 @@ function regexEmail()
 function regexPassword()
 {
 	return "((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*?([^\w\s]|[_])).{8,})";
+}
+
+function regexDate()
+{
+	return "([0-9]{4}-[0-9]{2}-[0-9]{2})";
 }
 
 function minBirthday()

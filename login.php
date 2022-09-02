@@ -27,6 +27,7 @@ redirectHomeIfLoggedIn();
 								$foundUser = $users[0];
 
 								if (password_verify($_POST["password"], $foundUser["password"])) :
+									$_SESSION["userId"] = $foundUser["id"];
 									$_SESSION["email"] = $foundUser["email"];
 									$_SESSION["role"] = $foundUser["role"];
 
