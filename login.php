@@ -25,17 +25,19 @@ redirectHomeIfLoggedIn();
 
 							if (sizeof($users) > 0) :
 								$foundUser = $users[0];
-								var_dump(password_hash($_POST["password"], PASSWORD_DEFAULT));
-								if (hash_equals($foundUser["password"], password_hash($_POST["password"], PASSWORD_DEFAULT))) :
+
+								if (password_verify($_POST["password"], $foundUser["password"])) :
 									$_SESSION["email"] = $foundUser["email"];
 									$_SESSION["role"] = $foundUser["role"];
 
 									header('Location: /');
 									exit;
 						?>
-								<?php else : ?>
+								<?php
+								else :
+								?>
 					<div class="alert alert-danger" role="alert">
-						Incorrect password????????????
+						Incorrect password
 					</div>
 				<?php
 								endif
