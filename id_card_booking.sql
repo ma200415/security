@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022 年 09 月 03 日 18:31
+-- 產生時間： 2022 年 09 月 03 日 20:16
 -- 伺服器版本： 10.4.24-MariaDB
 -- PHP 版本： 8.1.6
 
@@ -80,7 +80,6 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `email`, `password`, `role`, `cdate`) VALUES
-(20, 'test@test.com', '$2y$10$D0fChDy2Eoz1TQfNOh.BYOKNFBigX/P.0Zw3c6H9CJJ3WkZV56Pja', 'public', '2022-09-02 12:52:30'),
 (21, 'admin@gmail.com', '$2y$10$F3fgWRv2Bsi7nemvB3v1meCCEgw8mP405.gRt3bTfH5mWVcaULrde', 'admin', '2022-09-03 19:03:41');
 
 --
@@ -115,13 +114,13 @@ ALTER TABLE `user`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- 已傾印資料表的限制式

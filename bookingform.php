@@ -17,13 +17,13 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 					<p class="card-text">
 						<?php
 						$dbh = pdo();
-						$sql = 'SELECT engName, gender, idNo, birthday, contact, reservationDate, iv FROM booking WHERE user = ?';
+						$sql = 'SELECT engName, gender, idNo, photo, birthday, contact, reservationDate, iv FROM booking WHERE user = ?';
 						$sth = $dbh->prepare($sql);
 						$sth->execute([$_SESSION["userId"]]);
 						$booking = $sth->fetch(PDO::FETCH_ASSOC);
 
 						if ($booking) :
-							list($engName, $gender, $idCardNo, $birthday, $contact) = decryptData([$booking["engName"], $booking["gender"], $booking["idNo"], $booking["birthday"], $booking["contact"]], $booking["iv"]);
+							list($engName, $gender, $idCardNo, $photo, $birthday, $contact) = decryptData([$booking["engName"], $booking["gender"], $booking["idNo"], $booking["photo"], $booking["birthday"], $booking["contact"]], $booking["iv"]);
 						?>
 					<div class="alert alert-primary" role="alert">
 						Submission History
@@ -42,6 +42,29 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						<div class="form-check form-check-inline">
 							<input class="form-check-input" type="radio" <?php echo $gender == "F" ? "checked" : "disabled"; ?>>
 							<label class="form-check-label">Female</label>
+						</div>
+					</div>
+
+					<div class="form-floating mb-3">
+						<a href="#" data-bs-toggle="modal" data-bs-target="#photoModal">
+							<img src="data:image/png;base64,<?php echo $photo ?>" class="img-thumbnail" />
+						</a>
+
+						<div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+							<div class="modal-dialog modal-dialog-centered modal-xl">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title">Photo</h5>
+										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+									</div>
+									<div class="modal-body">
+										<img src="data:image/png;base64,<?php echo $photo ?>" class="img-fluid" />
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
