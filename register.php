@@ -23,7 +23,6 @@ redirectHomeIfLoggedIn();
 								array_push($errorMsg, "Invalid email!");
 							}
 
-							// asd123ASD!@#
 							if (!preg_match(regexPassword(), $_POST["password"])) {
 								array_push($errorMsg, "Invalid password!");
 							}

@@ -18,14 +18,26 @@
 		<div class="collapse navbar-collapse" id="navbarSupportedContent">
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 				<li class="nav-item">
-					<a class="nav-link active" href="/">Home</a>
+					<a class="nav-link <?php echo $_SERVER["PHP_SELF"] == "/index.php" ? "active" : "" ?>" href="/">Home</a>
 				</li>
+
+				<?php if (isLoggedIn()) : ?>
+					<li class="nav-item">
+						<a class="nav-link <?php echo $_SERVER["PHP_SELF"] == "/bookingform.php" ? "active" : "" ?>" href="bookingform.php">Reservation</a>
+					</li>
+				<?php endif ?>
+
+				<?php if (checkPermissions(["admin"])) : ?>
+					<li class="nav-item">
+						<a class="nav-link <?php echo $_SERVER["PHP_SELF"] == "/bookings.php" ? "active" : "" ?>" href="bookings.php">Booking Records</a>
+					</li>
+				<?php endif ?>
 			</ul>
 
 			<div class="d-flex" role="search">
-				<?php if (isset($_SESSION["email"])) : ?>
-					<span class="navbar-text" style="color: white;">
-						<?php echo $_SESSION["email"] ?>
+				<?php if (isLoggedIn()) : ?>
+					<span class="navbar-text">
+						<span class="badge rounded-pill text-bg-light" style="font-size: 14px;"><?php echo $_SESSION["email"] ?></span>
 					</span>
 					&nbsp;
 					<form action="index.php" method="POST">
@@ -44,18 +56,32 @@
 <?php
 function redirectHomeIfLoggedIn()
 {
-	if (isset($_SESSION["email"])) {
+	if (isLoggedIn()) {
 		header('Location: /');
 		exit;
 	}
 }
 
-function redirectHomeIfNotLoggedIn()
+function redirectHomeIfNotLoggedIn(array $allowedRoles)
 {
-	if (!isset($_SESSION["email"])) {
-		header('Location: login.php');
+	if (!isLoggedIn() || !in_array($_SESSION["role"], $allowedRoles)) {
+		echo '<div class="alert alert-danger" role="alert" style="text-align: center;">';
+		echo "You don't have permission to access. Redirect in 5 seconds...";
+		echo '</div>';
+
+		header('Refresh:5; url=login.php');
 		exit;
 	}
+}
+
+function checkPermissions(array $allowedRoles)
+{
+	return isset($_SESSION["role"]) && in_array($_SESSION["role"], $allowedRoles);
+}
+
+function isLoggedIn()
+{
+	return isset($_SESSION["email"]);
 }
 
 function pdo()
@@ -108,5 +134,78 @@ function minBirthday()
 function maxBirthday()
 {
 	return date("Y-m-d");
+}
+
+function minReservationDate()
+{
+	return date("Y-m-d", strtotime("+3 Day"));
+}
+
+function maxReservationDate()
+{
+	return date("Y-m-d", strtotime("+6 Months"));
+}
+
+function encryptData(array $plaintexts)
+{
+	$cipherParam = cipherParams();
+
+	$key = $cipherParam["key"];
+	$cipher = $cipherParam["cipher"];
+
+	if (in_array($cipher, openssl_get_cipher_methods())) {
+		$payload = array();
+
+		$ivlen = openssl_cipher_iv_length($cipher);
+		$iv = openssl_random_pseudo_bytes($ivlen);
+
+		foreach ($plaintexts as $plaintext) {
+			array_push($payload, openssl_encrypt(trim($plaintext), $cipher, $key, 0, $iv));
+		}
+
+		array_push($payload, base64_encode($iv));
+
+		return $payload;
+	} else {
+		return false;
+	}
+}
+
+function decryptData(array $ciphertexts, $iv)
+{
+	$cipherParam = cipherParams();
+
+	$key = $cipherParam["key"];
+	$cipher = $cipherParam["cipher"];
+
+	if (in_array($cipher, openssl_get_cipher_methods())) {
+		$payload = array();
+
+		foreach ($ciphertexts as $ciphertext) {
+			array_push($payload, openssl_decrypt($ciphertext, $cipher, $key, 0, base64_decode($iv)));
+		}
+
+		return $payload;
+	} else {
+		return false;
+	}
+}
+
+function cipherParams()
+{
+	$cipherParam = array();
+	$dbh = pdo();
+
+	foreach ($dbh->query('SELECT value FROM misc WHERE name = "cipherKey"') as $row) {
+		$cipherParam["key"] =  $row['value'];
+		break;
+	}
+
+	foreach ($dbh->query('SELECT value FROM misc WHERE name = "cipher"') as $row) {
+		$cipherParam["cipher"] =  $row['value'];
+		break;
+	}
+
+	return $cipherParam;
 }
 ?>
