@@ -71,8 +71,8 @@ redirectHomeIfLoggedIn();
 				</div>
 				<div class="mb-3">
 					<label for="password" class="form-label">Password</label>
-					<input type="password" class="form-control" name="password" aria-describedby="passwordHelp" required>
-					<div id="passwordHelp" class="form-text">
+					<input type="password" class="form-control" name="password" required>
+					<div class="form-text">
 						<ul>
 							<li>
 								at least 8 characters

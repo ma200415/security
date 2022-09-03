@@ -76,14 +76,29 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 								$birthday = $_POST["birthday"];
 								$contact = $_POST["contact"];
 								$reservationDate = $_POST["reservationDate"];
-								$gender = $_POST["genderRadioOptions"];
+								$uploadPhoto = $_FILES['recentPhoto'];
 
 								if (!preg_match(regexEnglishName(), $engName)) {
 									array_push($errorMsg, "Invalid Name!");
 								}
 
-								if (empty($gender)) {
+								if (empty($_POST["genderRadioOptions"])) {
 									array_push($errorMsg, "Invalid Gender!");
+								}
+
+								if (empty($uploadPhoto)) {
+									array_push($errorMsg, "Photo is missing");
+								} else {
+									//Set max_allowed_packet=50M in my.ini
+									if ($uploadPhoto['error'] != 0) {
+										if ($uploadPhoto['error'] == 2) {
+											array_push($errorMsg, "File size exceeds limit");
+										} else {
+											array_push($errorMsg, "Error Code: " . $uploadPhoto['error']);
+										}
+									} else if (!in_array($uploadPhoto['type'], ["image/jpeg", "image/png"])) {
+										array_push($errorMsg, "Unsupported Media Type: " . $uploadPhoto['type']);
+									}
 								}
 
 								if (!preg_match(regexIDCardNo(), $idCardNo)) {
@@ -103,13 +118,14 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 								}
 
 								if (sizeof($errorMsg) < 1) {
-									list($e_engName, $e_gender, $e_idCardNo, $e_birthday, $e_contact, $iv) = encryptData([$engName, $gender, $idCardNo, $birthday, $contact]);
+									list($e_engName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_contact, $iv) =
+										encryptData([$engName, $_POST["genderRadioOptions"], encodeFile($uploadPhoto['tmp_name']), $idCardNo, $birthday, $contact]);
 
 									try {
 										$dbh = pdo();
-										$sql = 'INSERT INTO booking (user, engName, gender, idNo, birthday, contact, reservationDate, iv) VALUES (?,?,?,?,?,?,?,?)';
+										$sql = 'INSERT INTO booking (user, engName, gender, photo, idNo, birthday, contact, reservationDate, iv) VALUES (?,?,?,?,?,?,?,?,?)';
 										$sth = $dbh->prepare($sql);
-										$sth->execute([$_SESSION["userId"], $e_engName, $e_gender, $e_idCardNo, $e_birthday, $e_contact, $reservationDate, $iv]);
+										$sth->execute([$_SESSION["userId"], $e_engName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_contact, $reservationDate, $iv]);
 									} catch (PDOException $e) {
 										array_push($errorMsg, $e->getMessage());
 									}
@@ -133,11 +149,11 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 							}
 					?>
 
-					<form id="form1" action="<?php echo $_SERVER["PHP_SELF"] ?>" method="POST">
+					<form id="form1" action="<?php echo $_SERVER["PHP_SELF"] ?>" enctype="multipart/form-data" method="POST">
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control" name="engName" aria-describedby="engNameHelp" pattern="<?php echo regexEnglishName() ?>" required>
+							<input type="text" class="form-control" name="engName" placeholder="e.g. Chan Tai Man" value="<?php echo isset($_POST["engName"]) ? $_POST["engName"] : "" ?>" pattern="<?php echo regexEnglishName() ?>" required>
 							<label for="engName">Name (English)</label>
-							<div id="engNameHelp" class="form-text">
+							<div class="form-text">
 								<ul>
 									<li>
 										e.g. Chan Tai Man
@@ -148,19 +164,31 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 
 						<div class="form-floating mb-3">
 							<div class="form-check form-check-inline">
-								<input class="form-check-input" type="radio" name="genderRadioOptions" id="maleRadio" value="M">
+								<input class="form-check-input" type="radio" name="genderRadioOptions" id="maleRadio" value="M" <?php echo isset($_POST["genderRadioOptions"]) && $_POST["genderRadioOptions"] == "M" ? "checked" : ""; ?>>
 								<label class="form-check-label" for="maleRadio">Male</label>
 							</div>
 							<div class="form-check form-check-inline">
-								<input class="form-check-input" type="radio" name="genderRadioOptions" id="femaleRadio" value="F">
+								<input class="form-check-input" type="radio" name="genderRadioOptions" id="femaleRadio" value="F" <?php echo isset($_POST["genderRadioOptions"]) && $_POST["genderRadioOptions"] == "F" ? "checked" : ""; ?>>
 								<label class="form-check-label" for="femaleRadio">Female</label>
 							</div>
 						</div>
 
+						<div class="mb-3">
+							<input type="hidden" name="MAX_FILE_SIZE" value="10485760" />
+							<input class="form-control" type="file" name="recentPhoto" accept="image/png, image/jpeg" required>
+							<div class="form-text">
+								<ul>
+									<li>
+										Your recent photo (10MB maximum, JPG / PNG)
+									</li>
+								</ul>
+							</div>
+						</div>
+
 						<div class="form-floating mb-3">
-							<input type="text" class="form-control" name="idCardNo" aria-describedby="idCardNoHelp" pattern="<?php echo regexIDCardNo() ?>" required>
+							<input type="text" class="form-control" name="idCardNo" placeholder="e.g. A123456(7)" value="<?php echo isset($_POST["idCardNo"]) ? $_POST["idCardNo"] : "" ?>" pattern="<?php echo regexIDCardNo() ?>" required>
 							<label for="idCardNo">ID Card No.</label>
-							<div id="idCardNoHelp" class="form-text">
+							<div class="form-text">
 								<ul>
 									<li>
 										e.g. A123456(7)
@@ -170,9 +198,9 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						</div>
 
 						<div class="form-floating mb-3">
-							<input type="date" class="form-control" name="birthday" aria-describedby="birthdayHelp" max="<?php echo maxBirthday() ?>" min="<?php echo minBirthday() ?>" required>
+							<input type="date" class="form-control" name="birthday" value="<?php echo isset($_POST["birthday"]) ? $_POST["birthday"] : "" ?>" max="<?php echo maxBirthday() ?>" min="<?php echo minBirthday() ?>" required>
 							<label for="birthday">Birthday</label>
-							<div id="birthdayHelp" class="form-text">
+							<div class="form-text">
 								<ul>
 									<li>
 										e.g. 01/01/1990
@@ -182,9 +210,9 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						</div>
 
 						<div class="form-floating mb-3">
-							<input type="tel" class="form-control" name="contact" aria-describedby="contactHelp" pattern="<?php echo regexContact() ?>" required>
+							<input type="tel" class="form-control" name="contact" placeholder="e.g. 12345678" value="<?php echo isset($_POST["contact"]) ? $_POST["contact"] : "" ?>" pattern="<?php echo regexContact() ?>" required>
 							<label for="contact">Contact</label>
-							<div id="contactHelp" class="form-text">
+							<div class="form-text">
 								<ul>
 									<li>
 										e.g. 12345678
@@ -194,7 +222,7 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						</div>
 
 						<div class="form-floating">
-							<input type="date" class="form-control" name="reservationDate" aria-describedby="reservationDateHelp" max="<?php echo maxReservationDate() ?>" min="<?php echo minReservationDate() ?>" required>
+							<input type="date" class="form-control" name="reservationDate" value="<?php echo isset($_POST["reservationDate"]) ? $_POST["reservationDate"] : "" ?>" max="<?php echo maxReservationDate() ?>" min="<?php echo minReservationDate() ?>" required>
 							<label for="reservationDate">Reservation Date</label>
 						</div>
 					</form>

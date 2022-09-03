@@ -208,4 +208,9 @@ function cipherParams()
 
 	return $cipherParam;
 }
+
+function encodeFile($fileTmpName)
+{
+	return base64_encode(file_get_contents($fileTmpName));
+}
 ?>
