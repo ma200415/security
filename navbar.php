@@ -101,6 +101,11 @@ function regexEnglishName()
 	return "(^[a-zA-Z\s]*)";
 }
 
+function regexChineseName()
+{
+	return "/\p{Han}+/u";
+}
+
 function regexIDCardNo()
 {
 	return "(^[A-Z]{1}[0-9]{6}\([0-9]\))";

@@ -17,13 +17,17 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 					<p class="card-text">
 						<?php
 						$dbh = pdo();
-						$sql = 'SELECT engName, gender, idNo, photo, birthday, contact, reservationDate, iv FROM booking WHERE user = ?';
+						$sql = 'SELECT * FROM booking WHERE user = ?';
 						$sth = $dbh->prepare($sql);
 						$sth->execute([$_SESSION["userId"]]);
 						$booking = $sth->fetch(PDO::FETCH_ASSOC);
 
 						if ($booking) :
-							list($engName, $gender, $idCardNo, $photo, $birthday, $contact) = decryptData([$booking["engName"], $booking["gender"], $booking["idNo"], $booking["photo"], $booking["birthday"], $booking["contact"]], $booking["iv"]);
+							list($engName, $chiName, $gender, $occupation, $idCardNo, $photo, $birthday, $birthPlace, $contact, $address) =
+								decryptData([
+									$booking["engName"], $booking["chiName"], $booking["gender"], $booking["occupation"], $booking["idNo"], $booking["photo"],
+									$booking["birthday"], $booking["birthPlace"], $booking["contact"], $booking["address"]
+								], $booking["iv"]);
 						?>
 					<div class="alert alert-primary" role="alert">
 						Submission History
@@ -32,6 +36,11 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 					<div class="form-floating mb-3">
 						<input type="text" class="form-control" value="<?php echo $engName ?>" readonly>
 						<label for="engName">Name (English)</label>
+					</div>
+
+					<div class="form-floating mb-3">
+						<input type="text" class="form-control" value="<?php echo $chiName ?>" readonly>
+						<label for="chiName">Name (Chinese)</label>
 					</div>
 
 					<div class="form-floating mb-3">
@@ -69,13 +78,23 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 					</div>
 
 					<div class="form-floating mb-3">
+						<input type="text" class="form-control" value="<?php echo $occupation ?>" readonly>
+						<label>Occupation</label>
+					</div>
+
+					<div class="form-floating mb-3">
 						<input type="text" class="form-control" value="<?php echo $idCardNo ?>" readonly>
 						<label>ID Card No.</label>
 					</div>
 
 					<div class="form-floating mb-3">
 						<input type="date" class="form-control" value="<?php echo $birthday ?>" readonly>
-						<label>Birthday</label>
+						<label>Date of Birth</label>
+					</div>
+
+					<div class="form-floating mb-3">
+						<input type="text" class="form-control" value="<?php echo $birthPlace ?>" readonly>
+						<label>Place of Birth</label>
 					</div>
 
 					<div class="form-floating mb-3">
@@ -83,9 +102,19 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						<label>Contact</label>
 					</div>
 
-					<div class="form-floating">
+					<div class="form-floating mb-3">
+						<textarea class="form-control" style="height: 120px;" rows="4" readonly><?php echo $address ?></textarea>
+						<label>Address</label>
+					</div>
+
+					<div class="form-floating mb-3">
 						<input type="date" class="form-control" value="<?php echo $booking["reservationDate"] ?>" readonly>
 						<label for="reservationDate">Reservation Date</label>
+					</div>
+
+					<div class="form-floating">
+						<input type="text" class="form-control" value="<?php echo $booking["redemptionPlace"] ?>" readonly>
+						<label>Redemption Place</label>
 					</div>
 				<?php
 						else :
@@ -94,23 +123,36 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 							if (isset($_POST["booking"])) {
 								$errorMsg = array();
 
-								$engName = $_POST["engName"];
-								$idCardNo = $_POST["idCardNo"];
+								$engName = trim($_POST["engName"]);
+								$chiName = trim($_POST["chiName"]);
+								$idCardNo = trim($_POST["idCardNo"]);
 								$birthday = $_POST["birthday"];
-								$contact = $_POST["contact"];
+								$birthPlace = trim($_POST["birthPlace"]);
+								$address = trim($_POST["address"]);
+								$contact = trim($_POST["contact"]);
+								$occupation = trim($_POST["occupation"]);
 								$reservationDate = $_POST["reservationDate"];
+								$redemptionPlace = trim($_POST["redemptionPlace"]);
 								$uploadPhoto = $_FILES['recentPhoto'];
 
 								if (!preg_match(regexEnglishName(), $engName)) {
-									array_push($errorMsg, "Invalid Name!");
+									array_push($errorMsg, "Invalid English Name!");
+								}
+
+								if (!preg_match(regexChineseName(), $chiName)) {
+									array_push($errorMsg, "Invalid Chinese Name!");
 								}
 
 								if (empty($_POST["genderRadioOptions"])) {
-									array_push($errorMsg, "Invalid Gender!");
+									array_push($errorMsg, "Please select Gender!");
+								}
+
+								if (empty($occupation)) {
+									array_push($errorMsg, "Please input Occupation!");
 								}
 
 								if (empty($uploadPhoto)) {
-									array_push($errorMsg, "Photo is missing");
+									array_push($errorMsg, "Photo is missing!");
 								} else {
 									//Set max_allowed_packet=50M in my.ini
 									if ($uploadPhoto['error'] != 0) {
@@ -132,6 +174,14 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 									array_push($errorMsg, "Invalid Birthday!");
 								}
 
+								if (empty($birthPlace)) {
+									array_push($errorMsg, "Please input Place of Birth!");
+								}
+
+								if (empty($address)) {
+									array_push($errorMsg, "Please input Address!");
+								}
+
 								if (!preg_match(regexContact(), $contact)) {
 									array_push($errorMsg, "Invalid Contact!");
 								}
@@ -140,15 +190,23 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 									array_push($errorMsg, "Invalid Reservation Date!");
 								}
 
+								if (empty($redemptionPlace)) {
+									array_push($errorMsg, "Please input Redemption Place!");
+								}
+
 								if (sizeof($errorMsg) < 1) {
-									list($e_engName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_contact, $iv) =
-										encryptData([$engName, $_POST["genderRadioOptions"], encodeFile($uploadPhoto['tmp_name']), $idCardNo, $birthday, $contact]);
+									list($e_engName, $e_chiName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_birthPlace, $e_address, $e_contact, $e_occupation, $iv) =
+										encryptData([
+											$engName, $chiName, $_POST["genderRadioOptions"], encodeFile($uploadPhoto['tmp_name']),
+											$idCardNo, $birthday, $birthPlace, $address, $contact, $occupation
+										]);
 
 									try {
 										$dbh = pdo();
-										$sql = 'INSERT INTO booking (user, engName, gender, photo, idNo, birthday, contact, reservationDate, iv) VALUES (?,?,?,?,?,?,?,?,?)';
+										$sql = 'INSERT INTO booking (user, engName, chiName, gender, photo, idNo, birthday, birthPlace, contact, address, occupation, reservationDate, redemptionPlace, iv) 
+										VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 										$sth = $dbh->prepare($sql);
-										$sth->execute([$_SESSION["userId"], $e_engName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_contact, $reservationDate, $iv]);
+										$sth->execute([$_SESSION["userId"], $e_engName, $e_chiName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_birthPlace, $e_contact, $e_address, $e_occupation, $reservationDate, $redemptionPlace, $iv]);
 									} catch (PDOException $e) {
 										array_push($errorMsg, $e->getMessage());
 									}
@@ -186,6 +244,18 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						</div>
 
 						<div class="form-floating mb-3">
+							<input type="text" class="form-control" name="chiName" placeholder="e.g. 陳大文" value="<?php echo isset($_POST["chiName"]) ? $_POST["chiName"] : "" ?>" pattern="<?php echo regexChineseName() ?>" required>
+							<label for="chiName">Name (Chinese)</label>
+							<div class="form-text">
+								<ul>
+									<li>
+										e.g. 陳大文
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="form-floating mb-3">
 							<div class="form-check form-check-inline">
 								<input class="form-check-input" type="radio" name="genderRadioOptions" id="maleRadio" value="M" <?php echo isset($_POST["genderRadioOptions"]) && $_POST["genderRadioOptions"] == "M" ? "checked" : ""; ?>>
 								<label class="form-check-label" for="maleRadio">Male</label>
@@ -209,6 +279,18 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						</div>
 
 						<div class="form-floating mb-3">
+							<input type="text" class="form-control" name="occupation" placeholder="e.g. Software Engineer" value="<?php echo isset($_POST["occupation"]) ? $_POST["occupation"] : "" ?>" required>
+							<label for="occupation">Occupation</label>
+							<div class="form-text">
+								<ul>
+									<li>
+										e.g. Software Engineer
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="form-floating mb-3">
 							<input type="text" class="form-control" name="idCardNo" placeholder="e.g. A123456(7)" value="<?php echo isset($_POST["idCardNo"]) ? $_POST["idCardNo"] : "" ?>" pattern="<?php echo regexIDCardNo() ?>" required>
 							<label for="idCardNo">ID Card No.</label>
 							<div class="form-text">
@@ -222,11 +304,23 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 
 						<div class="form-floating mb-3">
 							<input type="date" class="form-control" name="birthday" value="<?php echo isset($_POST["birthday"]) ? $_POST["birthday"] : "" ?>" max="<?php echo maxBirthday() ?>" min="<?php echo minBirthday() ?>" required>
-							<label for="birthday">Birthday</label>
+							<label for="birthday">Date of Birth</label>
 							<div class="form-text">
 								<ul>
 									<li>
 										e.g. 01/01/1990
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" name="birthPlace" placeholder="e.g. Hong Kong" value="<?php echo isset($_POST["birthPlace"]) ? $_POST["birthPlace"] : "" ?>" required>
+							<label for="birthPlace">Place of Birth</label>
+							<div class="form-text">
+								<ul>
+									<li>
+										e.g. Hong Kong
 									</li>
 								</ul>
 							</div>
@@ -244,9 +338,34 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 							</div>
 						</div>
 
-						<div class="form-floating">
+						<div class="form-floating mb-3">
+							<textarea class="form-control" placeholder="Address" id="address" name="address" style="height: 120px;" rows="4" required><?php echo isset($_POST["address"]) ? $_POST["address"] : "" ?></textarea>
+							<label for="address">Address</label>
+							<div class="form-text">
+								<ul>
+									<li>
+										e.g. 5/F,
+										52 Lockhart Road,
+										WAN CHAI,
+										HONG KONG
+									</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="form-floating mb-3">
 							<input type="date" class="form-control" name="reservationDate" value="<?php echo isset($_POST["reservationDate"]) ? $_POST["reservationDate"] : "" ?>" max="<?php echo maxReservationDate() ?>" min="<?php echo minReservationDate() ?>" required>
 							<label for="reservationDate">Reservation Date</label>
+						</div>
+
+						<div class="form-floating">
+							<select class="form-select" name="redemptionPlace" aria-label="Redemption Place" required>
+								<option></option>
+								<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == "Hong Kong Island" ? "selected" : "" ?>>Hong Kong Island</option>
+								<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == "Kowloon" ? "selected" : "" ?>>Kowloon</option>
+								<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == "New Territories" ? "selected" : "" ?>>New Territories</option>
+							</select>
+							<label for="redemptionPlace">Redemption Place</label>
 						</div>
 					</form>
 					</p>
