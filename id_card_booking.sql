@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022 年 09 月 06 日 15:52
+-- 產生時間： 2022 年 09 月 06 日 17:57
 -- 伺服器版本： 10.4.24-MariaDB
 -- PHP 版本： 8.1.6
 
@@ -41,8 +41,10 @@ CREATE TABLE `booking` (
   `birthPlace` varchar(255) NOT NULL,
   `contact` varchar(255) NOT NULL,
   `reservationDate` date NOT NULL,
+  `reservationTime` varchar(5) NOT NULL,
   `redemptionPlace` varchar(255) NOT NULL,
   `iv` varchar(255) NOT NULL,
+  `status` varchar(20) DEFAULT NULL,
   `cdate` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -119,7 +121,7 @@ ALTER TABLE `user`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user`

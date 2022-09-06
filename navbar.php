@@ -131,6 +131,11 @@ function regexDate()
 	return "([0-9]{4}-[0-9]{2}-[0-9]{2})";
 }
 
+function regexTime()
+{
+	return "(^(([0-1]{0,1}[0-9])|(2[0-3])):[0-5]{0,1}[0-9]$)";
+}
+
 function minBirthday()
 {
 	return date("Y-m-d", strtotime("-150 Years"));
@@ -143,12 +148,22 @@ function maxBirthday()
 
 function minReservationDate()
 {
-	return date("Y-m-d", strtotime("+3 Day"));
+	return date("Y-m-d", strtotime("+7 Day"));
 }
 
 function maxReservationDate()
 {
-	return date("Y-m-d", strtotime("+6 Months"));
+	return date("Y-m-d", strtotime("+3 Months"));
+}
+
+function minReservationTime()
+{
+	return "09:00";
+}
+
+function maxReservationTime()
+{
+	return "17:00";
 }
 
 function encryptData(array $plaintexts)

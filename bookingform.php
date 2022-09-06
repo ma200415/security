@@ -107,9 +107,16 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 						<label>Address</label>
 					</div>
 
-					<div class="form-floating mb-3">
-						<input type="date" class="form-control" value="<?php echo $booking["reservationDate"] ?>" readonly>
-						<label for="reservationDate">Reservation Date</label>
+					<div class="row g-3 mb-3">
+						<div class="form-floating col">
+							<input type="date" class="form-control" value="<?php echo $booking["reservationDate"] ?>" readonly>
+							<label for="reservationDate">Reservation Date</label>
+						</div>
+
+						<div class="form-floating col">
+							<input type="time" class="form-control" value="<?php echo $booking["reservationTime"] ?>" readonly>
+							<label for="reservationTime">Time Slot</label>
+						</div>
 					</div>
 
 					<div class="form-floating">
@@ -132,6 +139,7 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 								$contact = trim($_POST["contact"]);
 								$occupation = trim($_POST["occupation"]);
 								$reservationDate = $_POST["reservationDate"];
+								$reservationTime = $_POST["reservationTime"];
 								$redemptionPlace = trim($_POST["redemptionPlace"]);
 								$uploadPhoto = $_FILES['recentPhoto'];
 
@@ -190,6 +198,10 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 									array_push($errorMsg, "Invalid Reservation Date!");
 								}
 
+								if (!preg_match(regexTime(), $reservationTime) || strtotime($reservationTime) > strtotime(maxReservationTime()) || strtotime($reservationTime) < strtotime(minReservationTime())) {
+									array_push($errorMsg, "Invalid Reservation Time!");
+								}
+
 								if (empty($redemptionPlace)) {
 									array_push($errorMsg, "Please input Redemption Place!");
 								}
@@ -203,10 +215,10 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 
 									try {
 										$dbh = pdo();
-										$sql = 'INSERT INTO booking (user, engName, chiName, gender, photo, idNo, birthday, birthPlace, contact, address, occupation, reservationDate, redemptionPlace, iv) 
-										VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+										$sql = 'INSERT INTO booking (user, engName, chiName, gender, photo, idNo, birthday, birthPlace, contact, address, occupation, reservationDate, reservationTime, redemptionPlace, iv) 
+										VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 										$sth = $dbh->prepare($sql);
-										$sth->execute([$_SESSION["userId"], $e_engName, $e_chiName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_birthPlace, $e_contact, $e_address, $e_occupation, $reservationDate, $redemptionPlace, $iv]);
+										$sth->execute([$_SESSION["userId"], $e_engName, $e_chiName, $e_gender, $e_uploadPhoto, $e_idCardNo, $e_birthday, $e_birthPlace, $e_contact, $e_address, $e_occupation, $reservationDate, $reservationTime, $redemptionPlace, $iv]);
 									} catch (PDOException $e) {
 										array_push($errorMsg, $e->getMessage());
 									}
@@ -227,6 +239,19 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 								endif
 						?>
 					<?php
+							} else {
+								$_POST["engName"] = "Chan Tai Man";
+								$_POST["chiName"] = "陳大文";
+								$_POST["idCardNo"] = "A123456(7)";
+								$_POST["birthday"] = "2000-05-20";
+								$_POST["birthPlace"] = "Hong Kong";
+								$_POST["address"] = "5/F, 52 Lockhart Road, WAN CHAI, HONG KONG";
+								$_POST["contact"] = "12345678";
+								$_POST["genderRadioOptions"] = "M";
+								$_POST["occupation"] = "Software Engineer";
+								$_POST["reservationDate"] = "2022-09-10";
+								$_POST["reservationTime"] = "14:30";
+								$_POST["redemptionPlace"] = "Tsuen Wan Smart Identity Card Replacement Centre";
 							}
 					?>
 
@@ -344,26 +369,42 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 							<div class="form-text">
 								<ul>
 									<li>
-										e.g. 5/F,
-										52 Lockhart Road,
-										WAN CHAI,
-										HONG KONG
+										e.g. 5/F, 52 Lockhart Road, WAN CHAI, HONG KONG
 									</li>
 								</ul>
 							</div>
 						</div>
 
-						<div class="form-floating mb-3">
-							<input type="date" class="form-control" name="reservationDate" value="<?php echo isset($_POST["reservationDate"]) ? $_POST["reservationDate"] : "" ?>" max="<?php echo maxReservationDate() ?>" min="<?php echo minReservationDate() ?>" required>
-							<label for="reservationDate">Reservation Date</label>
+						<div class="row g-3 mb-3">
+							<div class="form-floating col">
+								<input type="date" class="form-control" name="reservationDate" value="<?php echo isset($_POST["reservationDate"]) ? $_POST["reservationDate"] : "" ?>" max="<?php echo maxReservationDate() ?>" min="<?php echo minReservationDate() ?>" required>
+								<label for="reservationDate">Available Date</label>
+							</div>
+
+							<div class="form-floating col">
+								<input type="time" class="form-control" name="reservationTime" value="<?php echo isset($_POST["reservationTime"]) ? $_POST["reservationTime"] : "" ?>" min="<?php echo minReservationTime() ?>" max="<?php echo maxReservationTime() ?>" step="1800" required>
+								<label for="reservationTime">Time Slot (9AM - 5PM)</label>
+							</div>
 						</div>
 
 						<div class="form-floating">
 							<select class="form-select" name="redemptionPlace" aria-label="Redemption Place" required>
 								<option></option>
-								<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == "Hong Kong Island" ? "selected" : "" ?>>Hong Kong Island</option>
-								<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == "Kowloon" ? "selected" : "" ?>>Kowloon</option>
-								<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == "New Territories" ? "selected" : "" ?>>New Territories</option>
+								<?php
+								foreach ([
+									"Hong Kong Island Smart Identity Card Replacement Centre",
+									"East Kowloon Smart Identity Card Replacement Centre",
+									"West Kowloon Smart Identity Card Replacement Centre",
+									"Tsuen Wan Smart Identity Card Replacement Centre",
+									"Sha Tin Smart Identity Card Replacement Centre"
+								] as $key => $value) {
+								?>
+									<option <?php echo isset($_POST["redemptionPlace"]) && $_POST["redemptionPlace"] == $value ? "selected" : "" ?>>
+										<?php echo $value ?>
+									</option>
+								<?php
+								}
+								?>
 							</select>
 							<label for="redemptionPlace">Redemption Place</label>
 						</div>

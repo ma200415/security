@@ -8,7 +8,13 @@ redirectHomeIfNotLoggedIn(["admin"]);
 </head>
 
 <body>
-	<div class="container-sm" style="padding: 30px;">
+	<script>
+		function submitAction() {
+			return confirm("Confirm")
+		}
+	</script>
+
+	<div class="container-fluid" style="padding: 30px;">
 		<div class="col" style="margin: auto;">
 			<div class="card">
 				<div class="card-body">
@@ -19,31 +25,45 @@ redirectHomeIfNotLoggedIn(["admin"]);
 						<thead>
 							<tr>
 								<th scope="col">Reservation Date</th>
+								<th scope="col">Time</th>
+								<th scope="col">Redemption Place</th>
 								<th scope="col">User</th>
 								<th scope="col">Eng. Name</th>
+								<th scope="col">Chi. Name</th>
 								<th scope="col">Gender</th>
 								<th scope="col">Photo</th>
+								<th scope="col">Occupation</th>
 								<th scope="col">ID Card No.</th>
-								<th scope="col">Birthday</th>
+								<th scope="col">Date of Birth</th>
+								<th scope="col">Place of Birth</th>
 								<th scope="col">Contact</th>
+								<th scope="col">Address</th>
 								<th scope="col">Submission Date</th>
+								<th scope="col">Action</th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php
 							$dbh = pdo();
-							$sql = 'SELECT (SELECT email FROM user WHERE id=user) user, engName, idNo, gender, photo, birthday, contact, reservationDate, iv, cdate FROM booking ORDER BY reservationDate DESC';
+							$sql = 'SELECT *, (SELECT email FROM user WHERE id=user) userEmail FROM booking ORDER BY reservationDate DESC';
 							$sth = $dbh->prepare($sql);
 							$sth->execute();
 							$bookings = $sth->fetchAll();
 
 							foreach ($bookings as $key => $value) {
-								list($engName, $idCardNo, $gender, $photo, $birthday, $contact) = decryptData([$value["engName"], $value["idNo"], $value["gender"], $value["photo"], $value["birthday"], $value["contact"]], $value["iv"]);
+								list($engName, $chiName, $idCardNo, $gender, $photo, $occupation, $birthday, $birthPlace, $contact, $address) =
+									decryptData([
+										$value["engName"], $value["chiName"], $value["idNo"], $value["gender"], $value["photo"],
+										$value["occupation"], $value["birthday"], $value["birthPlace"], $value["contact"], $value["address"]
+									], $value["iv"]);
 							?>
 								<tr>
 									<td><?php echo $value["reservationDate"] ?></td>
-									<td><?php echo $value["user"] ?></td>
+									<td><?php echo $value["reservationTime"] ?></td>
+									<td><?php echo $value["redemptionPlace"] ?></td>
+									<td><?php echo $value["userEmail"] ?></td>
 									<td><?php echo $engName ?></td>
+									<td><?php echo $chiName ?></td>
 									<td><?php echo $gender ?></td>
 									<td>
 										<a href="#" data-bs-toggle="modal" data-bs-target="#photoModal<?php echo $key ?>">
@@ -67,10 +87,21 @@ redirectHomeIfNotLoggedIn(["admin"]);
 											</div>
 										</div>
 									</td>
+									<td><?php echo $occupation ?></td>
 									<td><?php echo $idCardNo ?></td>
 									<td><?php echo $birthday ?></td>
+									<td><?php echo $birthPlace ?></td>
 									<td><?php echo $contact ?></td>
+									<td><?php echo $address ?></td>
 									<td><?php echo $value["cdate"] ?></td>
+									<td>
+										<div class="d-grid gap-2 d-md-block">
+											<form action="<?php echo $_SERVER["PHP_SELF"] ?>" onsubmit="return submitAction()">
+												<button name="approve" type="submit" class="btn btn-success">Approve</button>
+												<button name="reject" type="submit" class="btn btn-danger">Reject</button>
+											</form>
+										</div>
+									</td>
 								</tr>
 							<?php
 							}
