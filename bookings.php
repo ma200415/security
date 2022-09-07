@@ -45,7 +45,6 @@ redirectHomeIfNotLoggedIn(["admin"]);
 							}
 
 							try {
-								$dbh = pdo();
 								$sql = 'UPDATE booking SET status = ?, sdate = CURRENT_TIMESTAMP(), sby = ? WHERE id = ?';
 								$sth = $dbh->prepare($sql);
 								$sth->execute([$status, $_SESSION["userId"], $bookingId]);
