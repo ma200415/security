@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022 年 09 月 06 日 17:57
+-- 產生時間： 2022 年 09 月 07 日 18:08
 -- 伺服器版本： 10.4.24-MariaDB
 -- PHP 版本： 8.1.6
 
@@ -44,8 +44,10 @@ CREATE TABLE `booking` (
   `reservationTime` varchar(5) NOT NULL,
   `redemptionPlace` varchar(255) NOT NULL,
   `iv` varchar(255) NOT NULL,
+  `cdate` datetime NOT NULL DEFAULT current_timestamp(),
   `status` varchar(20) DEFAULT NULL,
-  `cdate` datetime NOT NULL DEFAULT current_timestamp()
+  `sdate` datetime DEFAULT NULL,
+  `sby` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -66,7 +68,9 @@ CREATE TABLE `misc` (
 
 INSERT INTO `misc` (`name`, `value`, `remark`) VALUES
 ('cipher', 'aes-256-cbc', ''),
-('cipherKey', 'e8f6d3564f8b6b2c1caebefba607d8e84e897cd43ed35bbe127daccd8a62f96061543177bc477468640fc8ec5bd9f44d6b74', '');
+('cipherKey', 'e8f6d3564f8b6b2c1caebefba607d8e84e897cd43ed35bbe127daccd8a62f96061543177bc477468640fc8ec5bd9f44d6b74', ''),
+('smtpPassword', 'hmigchjhmtldyrws', '$mail->Password'),
+('smtpUsername', 'ma20200415@gmail.com', '$mail->Username');
 
 -- --------------------------------------------------------
 
@@ -98,7 +102,8 @@ INSERT INTO `user` (`id`, `email`, `password`, `role`, `cdate`) VALUES
 --
 ALTER TABLE `booking`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_user` (`user`);
+  ADD KEY `fk_user` (`user`),
+  ADD KEY `sby` (`sby`);
 
 --
 -- 資料表索引 `misc`
@@ -121,7 +126,7 @@ ALTER TABLE `user`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user`
@@ -137,6 +142,7 @@ ALTER TABLE `user`
 -- 資料表的限制式 `booking`
 --
 ALTER TABLE `booking`
+  ADD CONSTRAINT `booking_ibfk_1` FOREIGN KEY (`sby`) REFERENCES `user` (`id`),
   ADD CONSTRAINT `fk_user` FOREIGN KEY (`user`) REFERENCES `user` (`id`);
 COMMIT;
 

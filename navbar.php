@@ -11,7 +11,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 	<div class="container-sm">
-		<a class="navbar-brand" href="/">ID Card Booking System</a>
+		<a class="navbar-brand" href="/">ID Card Management System</a>
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
@@ -166,7 +166,7 @@ function maxReservationTime()
 	return "17:00";
 }
 
-function encryptData(array $plaintexts)
+function encryptData(array $plaintexts, $iv = null)
 {
 	$cipherParam = cipherParams();
 
@@ -177,7 +177,7 @@ function encryptData(array $plaintexts)
 		$payload = array();
 
 		$ivlen = openssl_cipher_iv_length($cipher);
-		$iv = openssl_random_pseudo_bytes($ivlen);
+		if ($iv == null) $iv = openssl_random_pseudo_bytes($ivlen);
 
 		foreach ($plaintexts as $plaintext) {
 			array_push($payload, openssl_encrypt(trim($plaintext), $cipher, $key, 0, $iv));
