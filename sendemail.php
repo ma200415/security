@@ -1,7 +1,6 @@
 <?php
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require 'PHPMailer/src/Exception.php';
@@ -24,6 +23,8 @@ function sendEmail($recipient, $subject, $body)
     }
 
     $mail = new PHPMailer(true);
+    $success = null;
+    $result = null;
 
     try {
         // $mail->SMTPDebug = SMTP::DEBUG_SERVER;
@@ -42,8 +43,18 @@ function sendEmail($recipient, $subject, $body)
         $mail->Body    = $body;
 
         $mail->send();
-        return 'Message has been sent';
+
+        $success = true;
+        $result = sprintf(
+            "To: %s Subject: %s Body: %s",
+            $recipient,
+            $subject,
+            $body
+        );
     } catch (Exception $e) {
-        return "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        $success = false;
+        $result = $mail->ErrorInfo;
     }
+
+    return [$success, $result];
 }

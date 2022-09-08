@@ -1,5 +1,5 @@
 <?php
-include 'navbar.php';
+include_once 'navbar.php';
 redirectHomeIfNotLoggedIn(["admin"]);
 ?>
 
@@ -27,44 +27,42 @@ redirectHomeIfNotLoggedIn(["admin"]);
 
 							if (isset($_POST["approve"])) {
 								$status = "approve";
-								$emailSubject = "ID Card Appointment Reminder";
 							} else if (isset($_POST["reject"])) {
 								$status = "reject";
-								$emailSubject = "ID Card Appointment Rejected";
-							}
-
-							try {
-								$dbh = pdo();
-								$sql = 'SELECT (select email from user where id=user) email, redemptionPlace, reservationDate, reservationTime FROM booking WHERE id = ?';
-								$sth = $dbh->prepare($sql);
-								$sth->execute([$bookingId]);
-								$bookingEmail = $sth->fetch(PDO::FETCH_ASSOC);
-							} catch (PDOException $e) {
-								echo $e->getMessage();
-								exit;
 							}
 
 							try {
 								$sql = 'UPDATE booking SET status = ?, sdate = CURRENT_TIMESTAMP(), sby = ? WHERE id = ?';
+								$dbh = pdo();
 								$sth = $dbh->prepare($sql);
 								$sth->execute([$status, $_SESSION["userId"], $bookingId]);
-
-								include_once 'sendemail.php';
-								echo sendEmail(
-									$bookingEmail["email"],
-									$emailSubject,
-									sprintf(
-										"Your appointment:<br/>Date: %s %s<br/>Venues: %s",
-										$bookingEmail["reservationDate"],
-										$bookingEmail["reservationTime"],
-										$bookingEmail["redemptionPlace"]
-									)
-								);
-
-								header("Location: " . $_SERVER["PHP_SELF"]);
-								exit;
 							} catch (PDOException $e) {
 								echo $e->getMessage();
+								exit;
+							}
+
+							if (isset($_POST["reject"])) {
+								try {
+									$sql = 'SELECT id, (select email from user where id=user) email, redemptionPlace, reservationDate, reservationTime FROM booking WHERE id = ?';
+									$sth = $dbh->prepare($sql);
+									$sth->execute([$bookingId]);
+									$bookingEmail = $sth->fetch(PDO::FETCH_ASSOC);
+								} catch (PDOException $e) {
+									echo $e->getMessage();
+									exit;
+								}
+
+								try {
+									sendReminderEmail(
+										$bookingEmail,
+										"ID Card Appointment Rejected"
+									);
+
+									header("Location: " . $_SERVER["PHP_SELF"]);
+									exit;
+								} catch (Exception $e) {
+									echo $e->getMessage();
+								}
 							}
 						}
 						?>

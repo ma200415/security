@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2022 年 09 月 08 日 02:03
+-- 產生時間： 2022 年 09 月 09 日 05:00
 -- 伺服器版本： 10.4.24-MariaDB
 -- PHP 版本： 8.1.6
 
@@ -47,7 +47,9 @@ CREATE TABLE `booking` (
   `cdate` datetime NOT NULL DEFAULT current_timestamp(),
   `status` varchar(20) DEFAULT NULL,
   `sdate` datetime DEFAULT NULL,
-  `sby` int(11) DEFAULT NULL
+  `sby` int(11) DEFAULT NULL,
+  `reminderSent` tinyint(1) DEFAULT NULL,
+  `reminderRemark` mediumtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -126,13 +128,13 @@ ALTER TABLE `user`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- 已傾印資料表的限制式

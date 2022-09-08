@@ -1,5 +1,5 @@
 <?php
-include 'navbar.php';
+include_once 'navbar.php';
 redirectHomeIfNotLoggedIn(["admin", "public"]);
 ?>
 

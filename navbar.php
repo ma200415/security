@@ -233,4 +233,26 @@ function encodeFile($fileTmpName)
 {
 	return base64_encode(file_get_contents($fileTmpName));
 }
+
+function sendReminderEmail($booking, $subject)
+{
+	include_once 'sendemail.php';
+
+	list($success, $result) = sendEmail(
+		$booking["email"],
+		$subject,
+		sprintf(
+			"Your appointment:<br/>Date: %s %s<br/>Venues: %s",
+			$booking["reservationDate"],
+			$booking["reservationTime"],
+			$booking["redemptionPlace"]
+		)
+	);
+
+	$sql = 'UPDATE booking SET reminderSent = ?, reminderRemark = ? WHERE id = ?';
+	$dbh = pdo();
+	$sth = $dbh->prepare($sql);
+
+	$sth->execute([$success, $result, $booking["id"]]);
+}
 ?>

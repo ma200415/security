@@ -1,4 +1,4 @@
-<?php include 'navbar.php'; ?>
+<?php include_once 'navbar.php'; ?>
 
 <head>
 	<title>Home</title>
