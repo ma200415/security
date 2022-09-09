@@ -86,6 +86,8 @@ redirectHomeIfNotLoggedIn(["admin"]);
 								<th scope="col">Address</th>
 								<th scope="col">Submission Date</th>
 								<th scope="col">Action</th>
+								<th scope="col">Reminder Sent</th>
+								<th scope="col">Reminder Remark</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -171,6 +173,8 @@ redirectHomeIfNotLoggedIn(["admin"]);
 											</form>
 										</div>
 									</td>
+									<td><?php echo $booking["reminderSent"] ?></td>
+									<td><?php echo $booking["reminderRemark"] ?></td>
 								</tr>
 							<?php
 							}
