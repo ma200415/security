@@ -259,18 +259,18 @@ redirectHomeIfNotLoggedIn(["admin", "public"]);
 				?>
 			<?php
 							} else {
-								$_POST["engName"] = "Chan Tai Man";
-								$_POST["chiName"] = "陳大文";
-								$_POST["idCardNo"] = "A123456(7)";
-								$_POST["birthday"] = "2000-05-20";
-								$_POST["birthPlace"] = "Hong Kong";
-								$_POST["address"] = "5/F, 52 Lockhart Road, WAN CHAI, HONG KONG";
-								$_POST["contact"] = "12345678";
-								$_POST["genderRadioOptions"] = "M";
-								$_POST["occupation"] = "Software Engineer";
-								$_POST["reservationDate"] = "2022-09-10";
-								$_POST["reservationTime"] = "14:30";
-								$_POST["redemptionPlace"] = "Tsuen Wan Smart Identity Card Replacement Centre";
+								// $_POST["engName"] = "Chan Tai Man";
+								// $_POST["chiName"] = "陳大文";
+								// $_POST["idCardNo"] = "A123456(7)";
+								// $_POST["birthday"] = "2000-05-20";
+								// $_POST["birthPlace"] = "Hong Kong";
+								// $_POST["address"] = "5/F, 52 Lockhart Road, WAN CHAI, HONG KONG";
+								// $_POST["contact"] = "12345678";
+								// $_POST["genderRadioOptions"] = "M";
+								// $_POST["occupation"] = "Software Engineer";
+								// $_POST["reservationDate"] = "2022-09-10";
+								// $_POST["reservationTime"] = "14:30";
+								// $_POST["redemptionPlace"] = "Tsuen Wan Smart Identity Card Replacement Centre";
 							}
 			?>
 
